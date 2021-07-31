@@ -25,7 +25,6 @@ Deploy your own Bot ♥️! **Star 🌟 Fork 🍴 and Deploy**
 - `IS_PUBLIC_BOT` - Set this to 'True' if you want to set Download Function as Public. Default to 'False'
 - `MEGA_EMAIL` - Fill this if you want to use your own Mega Account. This is your Mega account Email
 - `MEGA_PASSWORD` - Fill this if you want to use your own Mega Account. This is your Mega account Password
-- `USER_ACCOUNT` Set this to 'True' If you want to use your own Mega Account. Default to 'False'
 
 ### With Heroku
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/Itz-fork/Mega.nz-Bot)
