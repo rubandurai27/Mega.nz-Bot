@@ -5,25 +5,27 @@ from mega import Mega
 from pyrogram import Client
 from pyrogram.types import Message
 
-from config import Config
+from config import Config, LOGIN_ERROR_TEXT, ERROR_TEXT, LOGGED_AS_USER
 
+# Mega user account credentials
 email = Config.MEGA_EMAIL
 password = Config.MEGA_PASSWORD
 
 mega = Mega()
 
-# Mega User Account
-if Config.USER_ACCOUNT == "True":
+m = None
+# Mega Account Login
+def login_to_mega():
+  global m
   try:
-    m = mega.login(email, password)
+    if email and password is not None:
+      # Login as Mega user account
+      m = mega.login(email, password)
+      print(LOGGED_AS_USER)
+    else:
+      print(LOGIN_ERROR_TEXT)
+      # Login as anonymous account
+      m = mega.login()
   except:
-    print("Please Check Your Config Vars. Mega Email or Password is Missing! \nOr Change USER_ACCOUNT var value 'False' to Login as Anonymouse Account! \n\n Mega.nz Bot is Leaving The World....")
-    exit()
-
-# If there is no User account Bot can login as a anonymouse user. (This is the default option)
-if Config.USER_ACCOUNT == "False":
-  try:
-    m = mega.login()
-  except:
-    print("Can't Login as a Anonymouse user for some reason. Can You Login with Your Mega Account? \n\n Bot is Leaving This world...")
+    print(ERROR_TEXT)
     exit()
