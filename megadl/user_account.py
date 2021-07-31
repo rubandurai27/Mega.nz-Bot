@@ -23,9 +23,6 @@ async def accinfo(_, message: Message):
   if message.from_user.id not in Config.AUTH_USERS:
     await message.reply_text("**Sorry this bot isn't a Public Bot 🥺! But You can make your own bot ☺️, Click on Below Button!**", reply_markup=GITHUB_REPO)
     return
-  if Config.USER_ACCOUNT == "False":
-    await message.reply_text("`You didn't setup a Mega.nz Account to Get details!`")
-    return
   acc_info_msg = await message.reply_text("`Processing ⚙️...`")
   get_user = m.get_user()
   imported_user = json.dumps(get_user)
@@ -60,9 +57,6 @@ async def uptomega(client: Client, message: Message):
   if message.from_user.id not in Config.AUTH_USERS:
     await message.reply_text("**Sorry this bot isn't a Public Bot 🥺! But You can make your own bot ☺️, Click on Below Button!**", reply_markup=GITHUB_REPO)
     return
-  if Config.USER_ACCOUNT == "False":
-    await message.reply_text("`You didn't setup a Mega.nz Account to Get details!`")
-    return
   todownfile = message.reply_to_message
   if not todownfile:
     await message.reply_text("**Please reply to a Media File to Upload!**")
@@ -94,9 +88,6 @@ async def uptomega(client: Client, message: Message):
 async def importurlf(_, message: Message):
   if message.from_user.id not in Config.AUTH_USERS:
     await message.reply_text("**Sorry this bot isn't a Public Bot 🥺! But You can make your own bot ☺️, Click on Below Button!**", reply_markup=GITHUB_REPO)
-    return
-  if Config.USER_ACCOUNT == "False":
-    await message.reply_text("You didn't setup a Mega.nz Account to Get details!")
     return
   importing_msg = await message.reply_text("`Processing ⚙️...`")
   reply_msg = message.reply_to_message
