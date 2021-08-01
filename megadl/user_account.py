@@ -7,39 +7,64 @@ import os
 import time
 
 from pyrogram import Client, filters
+from pyrogram.methods import password
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from hurry.filesize import size
 from functools import partial
 from asyncio import get_running_loop
 
-from megadl.account import m
+from megadl.account import m, email, password
 from megadl.mega_dl import GITHUB_REPO
-from config import Config
+from config import Config, ERROR_TEXT
 from megadl.mega_help import progress_for_pyrogram, humanbytes
 
+
 # Get Mega user Account info
+
+def USER_ACC_INFO():
+  try:
+    get_user = m.get_user()
+    imported_user = json.dumps(get_user)
+    uacc_info = json.loads(imported_user)
+    acc_email = uacc_info['email']
+    acc_name = uacc_info['name']
+    acc_quota = m.get_quota()
+    js_acc_space = m.get_storage_space()
+    acc_space_f = json.dumps(js_acc_space)
+    acc_space = json.loads(acc_space_f)
+    btotal_space = acc_space['total']
+    bused_space = acc_space['used']
+    bfree_space = btotal_space - bused_space
+    total_space = size(btotal_space)
+    used_space = size(bused_space)
+    free_space = size(bfree_space)
+    USER_ACC_INFO.info = f"""
+**~ Your User Account Info ~**
+
+✦ **Account Name:** `{acc_name}`
+✦ **Email:** `{acc_email}`
+✦ **Storage,**
+    - **Total:** `{total_space}`
+    - **Used:** `{used_space}`
+    - **Free:** `{free_space}`
+✦ **Quota:** `{acc_quota} MB`
+"""
+  except Exception as e:
+    print(ERROR_TEXT.format(e))
+
+info_msg = None
+
 @Client.on_message(filters.command("info") & filters.private)
 async def accinfo(_, message: Message):
   if message.from_user.id not in Config.AUTH_USERS:
     await message.reply_text("**Sorry this bot isn't a Public Bot 🥺! But You can make your own bot ☺️, Click on Below Button!**", reply_markup=GITHUB_REPO)
     return
   acc_info_msg = await message.reply_text("`Processing ⚙️...`")
-  get_user = m.get_user()
-  imported_user = json.dumps(get_user)
-  uacc_info = json.loads(imported_user)
-  acc_email = uacc_info['email']
-  acc_name = uacc_info['name']
-  acc_quota = m.get_quota()
-  js_acc_space = m.get_storage_space()
-  acc_space_f = json.dumps(js_acc_space)
-  acc_space = json.loads(acc_space_f)
-  btotal_space = acc_space['total']
-  bused_space = acc_space['used']
-  bfree_space = btotal_space - bused_space
-  total_space = size(btotal_space)
-  used_space = size(bused_space)
-  free_space = size(bfree_space)
-  await acc_info_msg.edit(f"**~ Your User Account Info ~** \n\n✦ **Account Name:** `{acc_name}` \n✦ **Email:** `{acc_email}` \n✦ **Storage,** \n       - **Total:** `{total_space}` \n       - **Used:** `{used_space}` \n       - **Free:** `{free_space}` \n✦ **Quota:** `{acc_quota} MB`")
+  if email and password is None:
+    await acc_info_msg.edit("`Setup an User Account to Use this Feature!`")
+    return
+  USER_ACC_INFO()
+  await acc_info_msg.edit(USER_ACC_INFO.info)
 
 # Upload files from telegram to Mega.nz
 public_link = None
@@ -50,22 +75,27 @@ def UploadToMega(toupload, megaupmsg):
     uploadfile = m.upload(f"{toupload}", upstatusmsg=megaupmsg)
     public_link = m.get_upload_link(uploadfile)
   except Exception as e:
-    print(e)
+    print(ERROR_TEXT.format(e))
 
 @Client.on_message(filters.command("upload") & filters.private)
 async def uptomega(client: Client, message: Message):
   if message.from_user.id not in Config.AUTH_USERS:
     await message.reply_text("**Sorry this bot isn't a Public Bot 🥺! But You can make your own bot ☺️, Click on Below Button!**", reply_markup=GITHUB_REPO)
     return
+  megauplaod_msg = await message.reply_text("`Processing ⚙️...`")
+  if email and password is None:
+    await megauplaod_msg.edit("`Setup an User Account to Use this Feature!`")
+    return
   todownfile = message.reply_to_message
   if not todownfile:
-    await message.reply_text("**Please reply to a Media File to Upload!**")
+    await megauplaod_msg.edit("**Please reply to a Media File to Upload!**")
     return
   if todownfile.media is None:
-    await message.reply_text("Sorry, I can't Upload Text to Mega! Please reply to a Media File!")
+    await megauplaod_msg.edit("Sorry, I can't Upload Text to Mega! Please reply to a Media File!")
     return
   try:
     start_time = time.time()
+    await megauplaod_msg.delete()
     megaupmsg = await message.reply_text("**Starting to Download The Content to My Server! This may take while 😴**")
     toupload = await client.download_media(message=todownfile, progress=progress_for_pyrogram, progress_args=("**Trying to Download!** \n", megaupmsg, start_time))
     await megaupmsg.edit("**Successfully Downloaded the File!**")
@@ -77,10 +107,11 @@ async def uptomega(client: Client, message: Message):
     os.remove(toupload)
   except Exception as e:
     await megaupmsg.edit(f"**Error:** `{e}`")
+    print(ERROR_TEXT.format(e))
     try:
       os.remove(toupload)
     except Exception as e:
-      print(f"Why this file is gae? \nError: {e}")
+      print(ERROR_TEXT.format(e))
 
 
 # Import files from a public url
@@ -108,7 +139,7 @@ async def importurlf(_, message: Message):
         msg_text = msg_txt_url
   except Exception as e:
     await importing_msg.edit("Hmmm... Looks like there is something other than text! Mind if check it again 🤔?")
-    print(e)
+    print(ERROR_TEXT.format(e))
     return
   else:
     try:
@@ -118,3 +149,4 @@ async def importurlf(_, message: Message):
       await message.reply_text(f"**Successfully Imported 😌** \n\n**Link:** `{imported_link}` \n\n**Powered by @NexaBotsUpdates**", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("📥 Imported Link 📥", url=f"{imported_link}")]]))
     except Exception as e:
       await message.reply_text(f"**Error:** `{e}`")
+      print(ERROR_TEXT.format(e))
