@@ -6,7 +6,6 @@ import shutil
 import filetype
 import moviepy.editor
 import time
-import logging
 import subprocess
 import json
 
@@ -21,10 +20,6 @@ from megadl.mega_help import progress_for_pyrogram, humanbytes
 
 from megadl.account import m
 from config import Config
-
-# Logging
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 # path we gonna give the download
 basedir = Config.DOWNLOAD_LOCATION
