@@ -26,6 +26,6 @@ def login_to_mega():
       print(LOGIN_ERROR_TEXT)
       # Login as anonymous account
       m = mega.login()
-  except:
-    print(ERROR_TEXT)
+  except Exception as e:
+    print(ERROR_TEXT.format(e))
     exit()
